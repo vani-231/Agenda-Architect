@@ -1,0 +1,6 @@
+{
+  "name": "Agenda Architect",
+  "description": "Transform any document or markdown file into an actionable, timed meeting agenda with topic summaries, key stakeholders, action items, and real-time agenda tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
