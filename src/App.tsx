@@ -151,7 +151,7 @@ export default function App() {
             <strong>Agenda Architect</strong> • Synthesize documents into precision timed agendas
           </span>
           <span className="text-slate-400">
-            Powered by Google Gemini 3.8 Flash
+            Powered by Google Gemini Flash
           </span>
         </div>
       </footer>

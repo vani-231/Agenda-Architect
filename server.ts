@@ -312,20 +312,36 @@ Generate the response in valid JSON matching this schema:
 
     parts.push({ text: promptText });
 
+    const candidateModels = ['gemini-flash-latest', 'gemini-3.6-flash', 'gemini-3.8-flash'];
     let responseText = '';
-    try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: parts.length === 1 ? parts[0].text : { parts },
-        config: {
-          responseMimeType: 'application/json',
-          temperature: 0.3,
-          systemInstruction: 'You are Agenda Architect. You create structured, realistic, expertly timed meeting agendas from raw business, technical, and project documents. Always return pristine, valid JSON with exact minute allocations.',
-        },
-      });
-      responseText = response.text || '{}';
-    } catch (aiErr: any) {
-      console.warn('Gemini API call returned error, seamlessly using heuristic synthesizer:', aiErr.message);
+    let lastError: any = null;
+
+    for (const modelName of candidateModels) {
+      try {
+        console.log(`Attempting agenda generation with ${modelName}...`);
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: parts.length === 1 ? parts[0].text : { parts },
+          config: {
+            responseMimeType: 'application/json',
+            temperature: 0.3,
+            systemInstruction: 'You are Agenda Architect. You create structured, realistic, expertly timed meeting agendas from raw business, technical, and project documents. Always return pristine, valid JSON with exact minute allocations.',
+          },
+        });
+
+        if (response.text && response.text.trim()) {
+          responseText = response.text;
+          console.log(`Successfully generated agenda using ${modelName}`);
+          break;
+        }
+      } catch (err: any) {
+        console.warn(`Model ${modelName} returned error: ${err.message || err}`);
+        lastError = err;
+      }
+    }
+
+    if (!responseText) {
+      console.warn('All candidate Gemini models returned errors, using heuristic synthesizer:', lastError?.message);
       const fallbackAgenda = synthesizeFallbackAgenda(textToAnalyze || fileName, fileName, totalMinutes, meetingGoal, includeBuffer);
       res.json({ agenda: fallbackAgenda, isSynthesizedFallback: true });
       return;
